@@ -54,6 +54,19 @@ export interface AppSettingsEntity {
   updatedAt: Date;
 }
 
+export interface AssetImageEntity {
+  id: string;
+  assetId: string;
+  fileName: string;
+  originalName: string;
+  mimeType: string;
+  caption: string | null;
+  isPrimary: boolean;
+  sortOrder: number;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
 export interface AssetTreeNode extends AssetEntity {
   children: AssetTreeNode[];
 }

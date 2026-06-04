@@ -1,4 +1,5 @@
 import { Request, Response } from "express";
+import { assetImageService } from "../services/asset-image.service";
 import { assetService } from "../services/asset.service";
 import { asyncHandler } from "../utils/async-handler";
 import {
@@ -15,8 +16,10 @@ export const listAssets = asyncHandler(async (req: Request, res: Response) => {
 });
 
 export const getAsset = asyncHandler(async (req: Request, res: Response) => {
-  const asset = await assetService.getById(getRouteParam(req.params.id));
-  return sendSuccess(res, "Asset retrieved.", asset);
+  const id = getRouteParam(req.params.id);
+  const asset = await assetService.getById(id);
+  const images = await assetImageService.listByAsset(id);
+  return sendSuccess(res, "Asset retrieved.", { ...asset, images });
 });
 
 export const getAssetTree = asyncHandler(async (req: Request, res: Response) => {

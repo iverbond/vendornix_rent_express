@@ -1,6 +1,7 @@
 import compression from "compression";
 import cors from "cors";
 import express from "express";
+import path from "path";
 import helmet from "helmet";
 import hpp from "hpp";
 import morgan from "morgan";
@@ -27,6 +28,7 @@ app.use(apiRateLimiter);
 app.use(morgan(env.NODE_ENV === "development" ? "dev" : "combined"));
 app.use(express.json({ limit: "2mb" }));
 app.use(express.urlencoded({ extended: true }));
+app.use("/uploads", express.static(path.resolve(env.UPLOAD_DIR)));
 
 app.get("/", (_req, res) => {
   res.json({

@@ -1,4 +1,5 @@
 import { AppSettingsModel } from "./models/app-settings.model";
+import { AssetImageModel } from "./models/asset-image.model";
 import { AssetModel } from "./models/asset.model";
 import { MembershipModel } from "./models/membership.model";
 import { OrganizationModel } from "./models/organization.model";
@@ -16,6 +17,16 @@ export const initModels = (): void => {
 
   AssetModel.hasMany(AssetModel, { foreignKey: "parentAssetId", as: "children" });
   AssetModel.belongsTo(AssetModel, { foreignKey: "parentAssetId", as: "parent" });
+
+  AssetModel.hasMany(AssetImageModel, { foreignKey: "assetId", as: "images" });
+  AssetImageModel.belongsTo(AssetModel, { foreignKey: "assetId", as: "asset" });
 };
 
-export { UserModel, OrganizationModel, MembershipModel, AssetModel, AppSettingsModel };
+export {
+  UserModel,
+  OrganizationModel,
+  MembershipModel,
+  AssetModel,
+  AssetImageModel,
+  AppSettingsModel,
+};

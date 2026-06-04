@@ -26,6 +26,7 @@ export const runLegacySchemaCleanup = async (): Promise<void> => {
 
   if (tableNames.has("assets")) {
     await normalizeAssetsTable();
+    await ensureAssetImagesTable();
   }
 };
 
@@ -153,4 +154,33 @@ const ensureAssetExtendedColumns = async (): Promise<void> => {
     await sequelize.query(`ALTER TABLE assets ADD COLUMN attributes JSON NULL`);
     logger.info("Added assets.attributes column.");
   }
+};
+
+const ensureAssetImagesTable = async (): Promise<void> => {
+  const tables = (await sequelize.query<{ name: string }>(
+    `SELECT TABLE_NAME AS name FROM information_schema.TABLES
+     WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'asset_images'`,
+    { type: QueryTypes.SELECT },
+  )) as Array<{ name: string }>;
+
+  if (tables.length > 0) {
+    return;
+  }
+
+  await sequelize.query(`
+    CREATE TABLE asset_images (
+      id CHAR(36) PRIMARY KEY,
+      asset_id CHAR(36) NOT NULL,
+      file_name VARCHAR(255) NOT NULL,
+      original_name VARCHAR(255) NOT NULL,
+      mime_type VARCHAR(100) NOT NULL,
+      caption VARCHAR(255) NULL,
+      is_primary TINYINT(1) NOT NULL DEFAULT 0,
+      sort_order INT NOT NULL DEFAULT 0,
+      created_at DATETIME NOT NULL,
+      updated_at DATETIME NOT NULL,
+      deleted_at DATETIME NULL
+    )
+  `);
+  logger.info("Created asset_images table.");
 };

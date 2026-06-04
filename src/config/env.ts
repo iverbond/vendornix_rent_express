@@ -52,4 +52,8 @@ export const env = {
   RATE_LIMIT_WINDOW_MS: parseNumber(process.env.RATE_LIMIT_WINDOW_MS, 15 * 60 * 1000),
 
   ORGANIZATION_HEADER: getEnv("ORGANIZATION_HEADER", "x-organization-id"),
+
+  UPLOAD_DIR: getEnv("UPLOAD_DIR", "uploads"),
+  UPLOAD_MAX_FILE_SIZE_MB: parseNumber(process.env.UPLOAD_MAX_FILE_SIZE_MB, 5),
+  UPLOAD_MAX_IMAGES_PER_ASSET: parseNumber(process.env.UPLOAD_MAX_IMAGES_PER_ASSET, 20),
 } as const;

@@ -1,6 +1,10 @@
 import { Request, Response } from "express";
 import { organizationService } from "../services/organization.service";
 import { asyncHandler } from "../utils/async-handler";
+import {
+  normalizeCreateOrganizationPayload,
+  normalizeUpdateOrganizationPayload,
+} from "../utils/organization-payload.util";
 import { getRouteParam } from "../utils/param.util";
 import { sendSuccess } from "../utils/response";
 
@@ -15,12 +19,15 @@ export const getOrganization = asyncHandler(async (req: Request, res: Response) 
 });
 
 export const createOrganization = asyncHandler(async (req: Request, res: Response) => {
-  const organization = await organizationService.create(req.body);
+  const organization = await organizationService.create(normalizeCreateOrganizationPayload(req.body));
   return sendSuccess(res, "Organization created.", organization, undefined, 201);
 });
 
 export const updateOrganization = asyncHandler(async (req: Request, res: Response) => {
-  const organization = await organizationService.update(getRouteParam(req.params.id), req.body);
+  const organization = await organizationService.update(
+    getRouteParam(req.params.id),
+    normalizeUpdateOrganizationPayload(req.body),
+  );
   return sendSuccess(res, "Organization updated.", organization);
 });
 
