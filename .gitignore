@@ -1,0 +1,42 @@
+# Dépendances Node.js
+/node_modules
+
+# Build output
+/dist
+
+# Fichiers d'environnement
+.env
+.env.*
+
+# Logs d'application (racine du projet uniquement)
+/logs/
+/logs/*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Dossiers d'uploads
+uploads/
+uploads/*
+
+# Fichiers de test coverage
+/coverage
+
+# Fichiers système
+.DS_Store
+Thumbs.db
+
+# Dossiers d'IDE et d'éditeurs
+.idea/
+.vscode/
+*.sublime-workspace
+
+# Fichiers temporaires
+tmp/
+temp/
+
+# Output Docker
+docker-data/
+# End of Selection
+```
+Archive.zip
