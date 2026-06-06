@@ -1,4 +1,14 @@
-import { AssetStatus, AssetType, CurrencyCode, MembershipRole, OrganizationStatus, OrganizationType, UserStatus } from "../constants/enums";
+import {
+  AssetStatus,
+  AssetType,
+  CurrencyCode,
+  MembershipRole,
+  OrganizationStatus,
+  OrganizationType,
+  PricingPeriod,
+  RentalStatus,
+  UserStatus,
+} from "../constants/enums";
 
 export interface UserEntity {
   id: string;
@@ -69,4 +79,40 @@ export interface AssetImageEntity {
 
 export interface AssetTreeNode extends AssetEntity {
   children: AssetTreeNode[];
+}
+
+export interface ClientEntity {
+  id: string;
+  organizationId: string;
+  firstName: string;
+  lastName: string;
+  email: string | null;
+  phone: string | null;
+  nationalId: string | null;
+  address: string | null;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface RentalEntity {
+  id: string;
+  organizationId: string;
+  assetId: string;
+  clientId: string;
+  status: RentalStatus;
+  startDate: string;
+  endDate: string | null;
+  pricingPeriod: PricingPeriod;
+  amountCdf: string;
+  amountUsd: string;
+  billingCurrency: CurrencyCode;
+  vatRate: string;
+  vatIncluded: boolean;
+  depositCdf: string | null;
+  depositUsd: string | null;
+  notes: string | null;
+  contractNumber: string | null;
+  contractContent: string | null;
+  createdAt: Date;
+  updatedAt: Date;
 }

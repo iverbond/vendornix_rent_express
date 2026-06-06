@@ -1,9 +1,11 @@
 import { AppSettingsModel } from "./models/app-settings.model";
 import { AssetImageModel } from "./models/asset-image.model";
 import { AssetModel } from "./models/asset.model";
+import { ClientModel } from "./models/client.model";
 import { MembershipModel } from "./models/membership.model";
 import { OrganizationModel } from "./models/organization.model";
 import { PasswordResetTokenModel } from "./models/password-reset-token.model";
+import { RentalModel } from "./models/rental.model";
 import { UserModel } from "./models/user.model";
 
 export const initModels = (): void => {
@@ -19,11 +21,23 @@ export const initModels = (): void => {
   OrganizationModel.hasMany(AssetModel, { foreignKey: "organizationId", as: "assets" });
   AssetModel.belongsTo(OrganizationModel, { foreignKey: "organizationId", as: "organization" });
 
+  OrganizationModel.hasMany(ClientModel, { foreignKey: "organizationId", as: "clients" });
+  ClientModel.belongsTo(OrganizationModel, { foreignKey: "organizationId", as: "organization" });
+
+  OrganizationModel.hasMany(RentalModel, { foreignKey: "organizationId", as: "rentals" });
+  RentalModel.belongsTo(OrganizationModel, { foreignKey: "organizationId", as: "organization" });
+
   AssetModel.hasMany(AssetModel, { foreignKey: "parentAssetId", as: "children" });
   AssetModel.belongsTo(AssetModel, { foreignKey: "parentAssetId", as: "parent" });
 
   AssetModel.hasMany(AssetImageModel, { foreignKey: "assetId", as: "images" });
   AssetImageModel.belongsTo(AssetModel, { foreignKey: "assetId", as: "asset" });
+
+  AssetModel.hasMany(RentalModel, { foreignKey: "assetId", as: "rentals" });
+  RentalModel.belongsTo(AssetModel, { foreignKey: "assetId", as: "asset" });
+
+  ClientModel.hasMany(RentalModel, { foreignKey: "clientId", as: "rentals" });
+  RentalModel.belongsTo(ClientModel, { foreignKey: "clientId", as: "client" });
 };
 
 export {
@@ -34,4 +48,6 @@ export {
   AssetImageModel,
   AppSettingsModel,
   PasswordResetTokenModel,
+  ClientModel,
+  RentalModel,
 };

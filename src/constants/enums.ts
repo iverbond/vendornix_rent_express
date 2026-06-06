@@ -52,3 +52,17 @@ export enum CurrencyCode {
   CDF = "CDF",
   USD = "USD",
 }
+
+export enum PricingPeriod {
+  HOURLY = "HOURLY",
+  DAILY = "DAILY",
+  MONTHLY = "MONTHLY",
+  YEARLY = "YEARLY",
+}
+
+export enum RentalStatus {
+  DRAFT = "DRAFT",
+  ACTIVE = "ACTIVE",
+  ENDED = "ENDED",
+  CANCELLED = "CANCELLED",
+}
