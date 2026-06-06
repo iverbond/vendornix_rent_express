@@ -20,6 +20,7 @@ app.use(cors({ origin: env.CORS_ORIGIN === "*" ? true : env.CORS_ORIGIN.split(",
 app.use(
   helmet({
     crossOriginEmbedderPolicy: false,
+    crossOriginResourcePolicy: { policy: "cross-origin" },
   }),
 );
 app.use(compression());
@@ -28,7 +29,15 @@ app.use(apiRateLimiter);
 app.use(morgan(env.NODE_ENV === "development" ? "dev" : "combined"));
 app.use(express.json({ limit: "2mb" }));
 app.use(express.urlencoded({ extended: true }));
-app.use("/uploads", express.static(path.resolve(env.UPLOAD_DIR)));
+app.use(
+  "/uploads",
+  (_req, res, next) => {
+    res.setHeader("Cross-Origin-Resource-Policy", "cross-origin");
+    res.setHeader("Access-Control-Allow-Origin", "*");
+    next();
+  },
+  express.static(path.resolve(env.UPLOAD_DIR)),
+);
 
 app.get("/", (_req, res) => {
   res.json({

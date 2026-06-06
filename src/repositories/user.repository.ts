@@ -63,6 +63,13 @@ class UserRepository {
     await row.destroy();
     return true;
   }
+
+  async updatePassword(id: string, hashedPassword: string): Promise<boolean> {
+    const row = await UserModel.findByPk(id);
+    if (!row) return false;
+    await row.update({ password: hashedPassword });
+    return true;
+  }
 }
 
 export const userRepository = new UserRepository();

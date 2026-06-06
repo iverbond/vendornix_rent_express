@@ -56,4 +56,18 @@ export const env = {
   UPLOAD_DIR: getEnv("UPLOAD_DIR", "uploads"),
   UPLOAD_MAX_FILE_SIZE_MB: parseNumber(process.env.UPLOAD_MAX_FILE_SIZE_MB, 5),
   UPLOAD_MAX_IMAGES_PER_ASSET: parseNumber(process.env.UPLOAD_MAX_IMAGES_PER_ASSET, 20),
+
+  SMTP_HOST: process.env.SMTP_HOST ?? "",
+  SMTP_PORT: parseNumber(process.env.SMTP_PORT, 587),
+  SMTP_SECURE:
+    process.env.SMTP_SECURE !== undefined
+      ? parseBoolean(process.env.SMTP_SECURE, false)
+      : parseNumber(process.env.SMTP_PORT, 587) === 465,
+  SMTP_USER: process.env.SMTP_USER ?? "",
+  SMTP_PASS: (process.env.SMTP_PASS ?? "").replace(/^["']|["']$/g, ""),
+  SMTP_FROM:
+    process.env.SMTP_FROM ??
+    process.env.EMAIL_FROM ??
+    "LocaPro <noreply@locapro.local>",
+  PASSWORD_RESET_EXPIRY_MINUTES: parseNumber(process.env.PASSWORD_RESET_EXPIRY_MINUTES, 60),
 } as const;
