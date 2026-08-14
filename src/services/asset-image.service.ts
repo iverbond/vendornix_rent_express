@@ -25,6 +25,18 @@ class AssetImageService {
     return images.map((img) => this.toResponse(img));
   }
 
+  async listGroupedByAssets(assetIds: string[]): Promise<Map<string, AssetImageResponse[]>> {
+    const images = await assetImageRepository.findByAssets(assetIds);
+    const grouped = new Map<string, AssetImageResponse[]>();
+    for (const image of images) {
+      const response = this.toResponse(image);
+      const bucket = grouped.get(image.assetId);
+      if (bucket) bucket.push(response);
+      else grouped.set(image.assetId, [response]);
+    }
+    return grouped;
+  }
+
   async upload(
     assetId: string,
     file: Express.Multer.File,

@@ -4,16 +4,9 @@ import { MembershipRole, UserRole } from "../constants/enums";
 import { membershipRepository } from "../repositories/membership.repository";
 import { organizationRepository } from "../repositories/organization.repository";
 import { AppError } from "../utils/app-error";
+import { MEMBERSHIP_ROLE_RANK } from "../utils/membership-role-rank.util";
 
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-
-const ROLE_RANK: Record<MembershipRole, number> = {
-  [MembershipRole.VIEWER]: 0,
-  [MembershipRole.AGENT]: 1,
-  [MembershipRole.MANAGER]: 2,
-  [MembershipRole.ADMIN]: 3,
-  [MembershipRole.OWNER]: 4,
-};
 
 /**
  * Reads `x-organization-id`, verifies the caller has a membership in that
@@ -66,7 +59,7 @@ export const requireOrganization = async (
 export const requireMinRole = (minRole: MembershipRole) => {
   return (req: Request, _res: Response, next: NextFunction): void => {
     const role = req.membershipRole;
-    if (!role || ROLE_RANK[role] < ROLE_RANK[minRole]) {
+    if (!role || MEMBERSHIP_ROLE_RANK[role] < MEMBERSHIP_ROLE_RANK[minRole]) {
       next(new AppError("Rôle insuffisant pour cette action.", 403, "INSUFFICIENT_ROLE"));
       return;
     }

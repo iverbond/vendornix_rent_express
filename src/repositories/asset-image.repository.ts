@@ -25,6 +25,19 @@ class AssetImageRepository {
     return rows.map((r) => toPublicJson<AssetImageEntity>(r));
   }
 
+  async findByAssets(assetIds: string[]): Promise<AssetImageEntity[]> {
+    if (assetIds.length === 0) return [];
+    const rows = await AssetImageModel.findAll({
+      where: { assetId: assetIds },
+      order: [
+        ["isPrimary", "DESC"],
+        ["sortOrder", "ASC"],
+        ["createdAt", "ASC"],
+      ],
+    });
+    return rows.map((r) => toPublicJson<AssetImageEntity>(r));
+  }
+
   async findById(id: string): Promise<AssetImageEntity | null> {
     const row = await AssetImageModel.findByPk(id);
     return row ? toPublicJson<AssetImageEntity>(row) : null;

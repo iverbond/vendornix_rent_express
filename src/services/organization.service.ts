@@ -1,4 +1,6 @@
 import { AssetModel, MembershipModel } from "../database";
+import { MembershipRole } from "../constants/enums";
+import { membershipRepository } from "../repositories/membership.repository";
 import {
   organizationRepository,
   type CreateOrganizationData,
@@ -18,8 +20,11 @@ class OrganizationService {
     return org;
   }
 
-  async create(dto: CreateOrganizationData): Promise<OrganizationEntity> {
-    return organizationRepository.create(dto);
+  /** Any authenticated user may create an organization — they become its OWNER immediately. */
+  async create(dto: CreateOrganizationData, ownerId: string): Promise<OrganizationEntity> {
+    const org = await organizationRepository.create(dto);
+    await membershipRepository.create({ userId: ownerId, organizationId: org.id, role: MembershipRole.OWNER });
+    return org;
   }
 
   async update(id: string, dto: UpdateOrganizationData): Promise<OrganizationEntity> {

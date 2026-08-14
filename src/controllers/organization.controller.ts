@@ -19,7 +19,10 @@ export const getOrganization = asyncHandler(async (req: Request, res: Response) 
 });
 
 export const createOrganization = asyncHandler(async (req: Request, res: Response) => {
-  const organization = await organizationService.create(normalizeCreateOrganizationPayload(req.body));
+  const organization = await organizationService.create(
+    normalizeCreateOrganizationPayload(req.body),
+    req.userId!,
+  );
   return sendSuccess(res, "Organization created.", organization, undefined, 201);
 });
 

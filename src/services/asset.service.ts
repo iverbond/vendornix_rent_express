@@ -1,11 +1,16 @@
 import { assetRepository, type CreateAssetData, type UpdateAssetData } from "../repositories/asset.repository";
 import { organizationRepository } from "../repositories/organization.repository";
+import { assetImageService, type AssetImageResponse } from "./asset-image.service";
 import type { AssetEntity, AssetTreeNode } from "../types/entity.types";
 import { AppError } from "../utils/app-error";
 
+export type AssetWithImages = AssetEntity & { images: AssetImageResponse[] };
+
 class AssetService {
-  async getAll(organizationId: string): Promise<AssetEntity[]> {
-    return assetRepository.findAll(organizationId);
+  async getAll(organizationId: string): Promise<AssetWithImages[]> {
+    const assets = await assetRepository.findAll(organizationId);
+    const imagesByAsset = await assetImageService.listGroupedByAssets(assets.map((a) => a.id));
+    return assets.map((asset) => ({ ...asset, images: imagesByAsset.get(asset.id) ?? [] }));
   }
 
   async getById(id: string, organizationId: string): Promise<AssetEntity> {
