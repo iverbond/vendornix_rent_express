@@ -1,7 +1,8 @@
 import { NextFunction, Request, Response } from "express";
 import { env } from "../config/env";
-import { MembershipRole } from "../constants/enums";
+import { MembershipRole, UserRole } from "../constants/enums";
 import { membershipRepository } from "../repositories/membership.repository";
+import { organizationRepository } from "../repositories/organization.repository";
 import { AppError } from "../utils/app-error";
 
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -34,6 +35,18 @@ export const requireOrganization = async (
         400,
         "ORGANIZATION_HEADER_REQUIRED",
       );
+    }
+
+    // Platform admins bypass tenant isolation entirely — full read/write on any organization's data.
+    if (req.userRole === UserRole.ADMIN || req.userRole === UserRole.SUPER_ADMIN) {
+      const org = await organizationRepository.findById(value);
+      if (!org) {
+        throw new AppError("Organisation introuvable.", 404, "ORGANIZATION_NOT_FOUND");
+      }
+      req.organizationId = value;
+      req.membershipRole = MembershipRole.OWNER;
+      next();
+      return;
     }
 
     const membership = await membershipRepository.findByUserAndOrg(req.userId!, value);

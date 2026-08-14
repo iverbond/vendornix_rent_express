@@ -5,6 +5,7 @@ import {
   MembershipRole,
   OrganizationStatus,
   OrganizationType,
+  UserRole,
   UserStatus,
 } from "../../constants/enums";
 import { AppSettingsModel, AssetModel, MembershipModel, OrganizationModel, UserModel } from "../index";
@@ -33,6 +34,7 @@ export const runV1Seeders = async (): Promise<void> => {
     phone: null,
     password,
     status: UserStatus.ACTIVE,
+    role: UserRole.SUPER_ADMIN,
   });
 
   const pascal = await UserModel.create({
@@ -42,6 +44,7 @@ export const runV1Seeders = async (): Promise<void> => {
     phone: null,
     password,
     status: UserStatus.ACTIVE,
+    role: UserRole.USER,
   });
 
   const vendornix = await OrganizationModel.create({

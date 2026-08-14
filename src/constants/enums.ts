@@ -5,6 +5,13 @@ export enum UserStatus {
   PENDING = "PENDING",
 }
 
+/** Platform-wide role — separate from `MembershipRole`, which is per-organization. */
+export enum UserRole {
+  SUPER_ADMIN = "SUPER_ADMIN",
+  ADMIN = "ADMIN",
+  USER = "USER",
+}
+
 export enum OrganizationType {
   INDIVIDUAL = "INDIVIDUAL",
   COMPANY = "COMPANY",

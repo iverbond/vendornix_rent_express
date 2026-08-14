@@ -1,5 +1,5 @@
 import { UserModel } from "../database";
-import { UserStatus } from "../constants/enums";
+import { UserRole, UserStatus } from "../constants/enums";
 import type { UserEntity } from "../types/entity.types";
 import { toPublicJson } from "../utils/entity-mapper.util";
 
@@ -10,6 +10,7 @@ export interface CreateUserData {
   phone?: string | null;
   password: string;
   status?: UserStatus;
+  role?: UserRole;
 }
 
 export interface UpdateUserData {
@@ -17,10 +18,15 @@ export interface UpdateUserData {
   lastName?: string;
   phone?: string | null;
   status?: UserStatus;
+  role?: UserRole;
   password?: string;
 }
 
 class UserRepository {
+  async count(): Promise<number> {
+    return UserModel.count();
+  }
+
   async findAll(): Promise<UserEntity[]> {
     const rows = await UserModel.findAll({
       order: [["createdAt", "DESC"]],
@@ -46,6 +52,7 @@ class UserRepository {
       phone: data.phone ?? null,
       password: data.password,
       status: data.status ?? UserStatus.ACTIVE,
+      role: data.role ?? UserRole.USER,
     });
     return toPublicJson<UserEntity>(row);
   }

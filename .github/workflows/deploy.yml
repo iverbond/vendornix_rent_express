@@ -1,0 +1,85 @@
+name: CI/CD Express → cPanel
+
+on:
+  push:
+    branches:
+      - master
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-and-deploy:
+    if: github.ref == 'refs/heads/master'
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1️⃣ Récupérer le code
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # 2️⃣ Installer Node.js
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      # 3️⃣ Installer pnpm (version alignée avec packageManager du package.json)
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.18.3
+
+      # 4️⃣ Installer toutes les dépendances (dev incluses, nécessaires pour le build TS)
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      # 5️⃣ Build TypeScript (src/ → dist/)
+      - name: Build Express
+        run: pnpm run build
+
+      # 6️⃣ Ne garder que les dépendances de production pour l'upload
+      - name: Prune dev dependencies
+        run: pnpm prune --prod
+
+      # 7️⃣ Préparer le redémarrage Passenger (cPanel Node.js Selector)
+      #    ⚠️ Ce fichier doit atterrir à la racine exacte de l'app Node
+      #    déclarée dans "Setup Node.js App" sur cPanel (Application root).
+      - name: Prepare Passenger restart file
+        run: |
+          mkdir -p tmp
+          touch tmp/restart.txt
+
+      # 8️⃣ Déployer via FTP sur ton cPanel
+      - name: Deploy to cPanel via FTP
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.4
+        with:
+          server: ${{ secrets.FTP_HOST }}
+          username: ${{ secrets.FTP_USER }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          local-dir: ./
+          server-dir: Vendornix_Rent/vendornix_rent_express/
+
+          # 🧠 Active le cache pour garder en mémoire les fichiers déjà uploadés
+          state-name: .ftp-deploy-sync-state.json
+
+          # 🧾 Niveaux de logs
+          log-level: minimal
+
+          # 🚫 Ignore certains fichiers (non nécessaires à uploader, ou sensibles)
+          exclude: |
+            **/.git*
+            **/.github*
+            **/src/**
+            **/logs/**
+            **/uploads/**
+            **/.env
+            **/.env.example
+            **/coverage/**
+            **/README.md
+            **/tsconfig.json
+            **/pnpm-lock.yaml

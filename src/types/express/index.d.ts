@@ -1,4 +1,4 @@
-import type { MembershipRole } from "../../constants/enums";
+import type { MembershipRole, UserRole } from "../../constants/enums";
 import type { RequestFilters } from "../query.types";
 
 declare global {
@@ -6,6 +6,8 @@ declare global {
     interface Request {
       /** Set by `authenticate` from a verified access token. */
       userId?: string;
+      /** Set alongside `userId` — the caller's platform-wide role (separate from `membershipRole`). */
+      userRole?: UserRole;
       /** Set by `requireOrganization` after verifying membership in the `x-organization-id` header. */
       organizationId?: string;
       /** Set alongside `organizationId` — the caller's role within that organization. */

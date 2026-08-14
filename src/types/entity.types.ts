@@ -7,6 +7,7 @@ import {
   OrganizationType,
   PricingPeriod,
   RentalStatus,
+  UserRole,
   UserStatus,
 } from "../constants/enums";
 
@@ -17,6 +18,7 @@ export interface UserEntity {
   email: string;
   phone: string | null;
   status: UserStatus;
+  role: UserRole;
   createdAt: Date;
   updatedAt: Date;
 }

@@ -13,6 +13,7 @@ export const authenticate = (req: Request, _res: Response, next: NextFunction): 
   try {
     const payload = verifyAccessToken(token);
     req.userId = payload.sub;
+    req.userRole = payload.role;
     next();
   } catch {
     next(new AppError("Invalid or expired token.", 401, "TOKEN_EXPIRED"));

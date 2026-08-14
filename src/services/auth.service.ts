@@ -1,5 +1,5 @@
 import { env } from "../config/env";
-import { MembershipRole, OrganizationStatus, OrganizationType, UserStatus } from "../constants/enums";
+import { MembershipRole, OrganizationStatus, OrganizationType, UserRole, UserStatus } from "../constants/enums";
 import { membershipRepository } from "../repositories/membership.repository";
 import { organizationRepository } from "../repositories/organization.repository";
 import { passwordResetTokenRepository } from "../repositories/password-reset-token.repository";
@@ -47,7 +47,7 @@ class AuthService {
 
     return {
       user: toPublicJson<UserEntity>(user),
-      accessToken: signAccessToken(user.id),
+      accessToken: signAccessToken(user.id, user.role),
       refreshToken: signRefreshToken(user.id),
     };
   }
@@ -59,6 +59,9 @@ class AuthService {
       throw new AppError("Email already in use.", 409, "EMAIL_EXISTS");
     }
 
+    // The very first account on a fresh install becomes platform SUPER_ADMIN; everyone after is a plain USER.
+    const isFirstAccount = (await userRepository.count()) === 0;
+
     const hashed = await passwordService.hashPassword(dto.password);
     const user = await userRepository.create({
       firstName: dto.firstName,
@@ -67,6 +70,7 @@ class AuthService {
       phone: dto.phone ?? null,
       password: hashed,
       status: UserStatus.ACTIVE,
+      role: isFirstAccount ? UserRole.SUPER_ADMIN : UserRole.USER,
     });
 
     const organization = await organizationRepository.create({
@@ -82,7 +86,7 @@ class AuthService {
 
     return {
       user,
-      accessToken: signAccessToken(user.id),
+      accessToken: signAccessToken(user.id, user.role),
       refreshToken: signRefreshToken(user.id),
     };
   }
@@ -101,7 +105,7 @@ class AuthService {
     }
 
     return {
-      accessToken: signAccessToken(user.id),
+      accessToken: signAccessToken(user.id, user.role),
       refreshToken: signRefreshToken(user.id),
     };
   }
@@ -114,17 +118,35 @@ class AuthService {
       return { message: GENERIC_RESET_MESSAGE };
     }
 
+    const resetUrl = await this.issueResetLink(user.id);
+    await emailService.sendPasswordResetEmail(user.email, resetUrl, user.firstName);
+
+    return { message: GENERIC_RESET_MESSAGE };
+  }
+
+  /** Admin-triggered reset: same token mechanism as `requestPasswordReset`, but keyed by user id and returning the link so the admin can copy it. */
+  async adminResetPassword(userId: string): Promise<{ resetUrl: string }> {
+    const user = await userRepository.findById(userId);
+    if (!user) {
+      throw new AppError("Utilisateur introuvable.", 404, "USER_NOT_FOUND");
+    }
+
+    const resetUrl = await this.issueResetLink(user.id);
+    // Best-effort — the admin already gets the link back regardless of email delivery.
+    await emailService.sendPasswordResetEmail(user.email, resetUrl, user.firstName).catch(() => undefined);
+
+    return { resetUrl };
+  }
+
+  private async issueResetLink(userId: string): Promise<string> {
     const rawToken = generateSecureToken();
     const tokenHash = hashToken(rawToken);
     const expiresAt = new Date(Date.now() + env.PASSWORD_RESET_EXPIRY_MINUTES * 60 * 1000);
 
-    await passwordResetTokenRepository.invalidateActiveForUser(user.id);
-    await passwordResetTokenRepository.create({ userId: user.id, tokenHash, expiresAt });
+    await passwordResetTokenRepository.invalidateActiveForUser(userId);
+    await passwordResetTokenRepository.create({ userId, tokenHash, expiresAt });
 
-    const resetUrl = `${env.FRONTEND_URL.replace(/\/$/, "")}/auth/reset-password?token=${rawToken}`;
-    await emailService.sendPasswordResetEmail(user.email, resetUrl, user.firstName);
-
-    return { message: GENERIC_RESET_MESSAGE };
+    return `${env.FRONTEND_URL.replace(/\/$/, "")}/auth/reset-password?token=${rawToken}`;
   }
 
   async resetPassword(token: string, password: string): Promise<{ message: string }> {

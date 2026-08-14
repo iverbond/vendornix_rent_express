@@ -2,10 +2,17 @@ import { userRepository, type CreateUserData, type UpdateUserData } from "../rep
 import { passwordService } from "./password.service";
 import type { UserEntity } from "../types/entity.types";
 import { AppError } from "../utils/app-error";
+import { toPublicJson } from "../utils/entity-mapper.util";
 
 class UserService {
   async getAll(): Promise<UserEntity[]> {
     return userRepository.findAll();
+  }
+
+  /** Single-match lookup by exact e-mail, for the member-invite search — never exposes the full directory. */
+  async findByEmail(email: string): Promise<UserEntity | null> {
+    const user = await userRepository.findByEmail(email.trim().toLowerCase());
+    return user ? toPublicJson<UserEntity>(user) : null;
   }
 
   async getById(id: string): Promise<UserEntity> {
