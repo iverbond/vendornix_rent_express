@@ -15,7 +15,8 @@ export interface CreatePaymentData {
   status: PaymentStatus;
 }
 
-export interface MarkPaidData {
+export interface ApplyPaymentData {
+  status: PaymentStatus.PARTIAL | PaymentStatus.PAID;
   paidAt: Date;
   paidAmountCdf: string;
   paidAmountUsd: string;
@@ -42,25 +43,27 @@ class PaymentRepository {
     return row ? toPublicJson<PaymentEntity>(row) : null;
   }
 
-  async findPendingByOrganization(organizationId: string): Promise<PaymentEntity[]> {
+  /** PENDING and PARTIAL installments on ACTIVE rentals — both still need attention. */
+  async findOutstandingByOrganization(organizationId: string): Promise<PaymentEntity[]> {
     const rows = await PaymentModel.findAll({
-      where: { organizationId, status: PaymentStatus.PENDING },
+      where: { organizationId, status: [PaymentStatus.PENDING, PaymentStatus.PARTIAL] },
       include: [{ model: RentalModel, as: "rental", where: { status: RentalStatus.ACTIVE }, attributes: [] }],
       order: [["dueDate", "ASC"]],
     });
     return rows.map((r) => toPublicJson<PaymentEntity>(r));
   }
 
-  async bulkCreate(rows: CreatePaymentData[]): Promise<void> {
-    if (rows.length === 0) return;
-    await PaymentModel.bulkCreate(rows);
+  async bulkCreate(rows: CreatePaymentData[]): Promise<PaymentEntity[]> {
+    if (rows.length === 0) return [];
+    const created = await PaymentModel.bulkCreate(rows, { returning: true });
+    return created.map((r) => toPublicJson<PaymentEntity>(r));
   }
 
-  async markPaid(id: string, data: MarkPaidData): Promise<PaymentEntity | null> {
+  async applyPayment(id: string, data: ApplyPaymentData): Promise<PaymentEntity | null> {
     const row = await PaymentModel.findByPk(id);
     if (!row) return null;
     await row.update({
-      status: PaymentStatus.PAID,
+      status: data.status,
       paidAt: data.paidAt,
       paidAmountCdf: data.paidAmountCdf,
       paidAmountUsd: data.paidAmountUsd,

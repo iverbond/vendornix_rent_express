@@ -10,14 +10,19 @@ export const listRentalPayments = asyncHandler(async (req: Request, res: Respons
 });
 
 export const markPaymentPaid = asyncHandler(async (req: Request, res: Response) => {
-  const payment = await paymentService.markPaid(getRouteParam(req.params.paymentId), req.organizationId!, {
-    paidAt: req.body.paidAt,
-    paidAmountCdf: req.body.paidAmountCdf != null ? String(req.body.paidAmountCdf) : undefined,
-    paidAmountUsd: req.body.paidAmountUsd != null ? String(req.body.paidAmountUsd) : undefined,
-    method: req.body.method ?? null,
-    notes: req.body.notes ?? null,
-  });
-  return sendSuccess(res, "Payment marked as paid.", payment);
+  const payment = await paymentService.recordPayment(
+    getRouteParam(req.params.id),
+    getRouteParam(req.params.paymentId),
+    req.organizationId!,
+    {
+      amountCdf: String(req.body.amountCdf),
+      amountUsd: String(req.body.amountUsd),
+      paidAt: req.body.paidAt,
+      method: req.body.method ?? null,
+      notes: req.body.notes ?? null,
+    },
+  );
+  return sendSuccess(res, "Payment recorded.", payment);
 });
 
 export const markPaymentPending = asyncHandler(async (req: Request, res: Response) => {
