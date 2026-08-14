@@ -4,7 +4,11 @@ import { uuidParam } from "./common.validators";
 
 export const createMembershipValidator = [
   body("userId").isUUID(4),
-  body("organizationId").isUUID(4),
+  body("role").isIn(Object.values(MembershipRole)),
+] as const;
+
+export const updateMembershipRoleValidator = [
+  uuidParam("id"),
   body("role").isIn(Object.values(MembershipRole)),
 ] as const;
 

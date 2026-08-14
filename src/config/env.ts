@@ -53,6 +53,11 @@ export const env = {
 
   ORGANIZATION_HEADER: getEnv("ORGANIZATION_HEADER", "x-organization-id"),
 
+  JWT_ACCESS_SECRET: getEnv("JWT_ACCESS_SECRET", "dev-access-secret-change-me"),
+  JWT_REFRESH_SECRET: getEnv("JWT_REFRESH_SECRET", "dev-refresh-secret-change-me"),
+  JWT_ACCESS_EXPIRES_IN: getEnv("JWT_ACCESS_EXPIRES_IN", "15m"),
+  JWT_REFRESH_EXPIRES_IN: getEnv("JWT_REFRESH_EXPIRES_IN", "30d"),
+
   UPLOAD_DIR: getEnv("UPLOAD_DIR", "uploads"),
   UPLOAD_MAX_FILE_SIZE_MB: parseNumber(process.env.UPLOAD_MAX_FILE_SIZE_MB, 5),
   UPLOAD_MAX_IMAGES_PER_ASSET: parseNumber(process.env.UPLOAD_MAX_IMAGES_PER_ASSET, 20),

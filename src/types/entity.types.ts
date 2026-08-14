@@ -39,6 +39,10 @@ export interface MembershipEntity {
   updatedAt: Date;
 }
 
+export interface MembershipWithOrganizationEntity extends MembershipEntity {
+  organization: OrganizationEntity;
+}
+
 export interface AssetEntity {
   id: string;
   organizationId: string;

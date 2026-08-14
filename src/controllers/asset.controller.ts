@@ -10,26 +10,27 @@ import { getRouteParam } from "../utils/param.util";
 import { sendSuccess } from "../utils/response";
 
 export const listAssets = asyncHandler(async (req: Request, res: Response) => {
-  const organizationId = req.query.organizationId as string | undefined;
-  const assets = await assetService.getAll(organizationId);
+  const assets = await assetService.getAll(req.organizationId!);
   return sendSuccess(res, "Assets retrieved.", assets);
 });
 
 export const getAsset = asyncHandler(async (req: Request, res: Response) => {
   const id = getRouteParam(req.params.id);
-  const asset = await assetService.getById(id);
-  const images = await assetImageService.listByAsset(id);
+  const asset = await assetService.getById(id, req.organizationId!);
+  const images = await assetImageService.listByAsset(id, req.organizationId!);
   return sendSuccess(res, "Asset retrieved.", { ...asset, images });
 });
 
 export const getAssetTree = asyncHandler(async (req: Request, res: Response) => {
-  const organizationId = req.query.organizationId as string | undefined;
-  const tree = await assetService.getTree(organizationId);
+  const tree = await assetService.getTree(req.organizationId!);
   return sendSuccess(res, "Asset tree retrieved.", tree);
 });
 
 export const createAsset = asyncHandler(async (req: Request, res: Response) => {
-  const asset = await assetService.create(normalizeCreateAssetPayload(req.body));
+  const asset = await assetService.create({
+    ...normalizeCreateAssetPayload(req.body),
+    organizationId: req.organizationId!,
+  });
   return sendSuccess(res, "Asset created.", asset, undefined, 201);
 });
 
@@ -37,11 +38,12 @@ export const updateAsset = asyncHandler(async (req: Request, res: Response) => {
   const asset = await assetService.update(
     getRouteParam(req.params.id),
     normalizeUpdateAssetPayload(req.body),
+    req.organizationId!,
   );
   return sendSuccess(res, "Asset updated.", asset);
 });
 
 export const deleteAsset = asyncHandler(async (req: Request, res: Response) => {
-  await assetService.delete(getRouteParam(req.params.id));
+  await assetService.delete(getRouteParam(req.params.id), req.organizationId!);
   return sendSuccess(res, "Asset deleted.", null);
 });

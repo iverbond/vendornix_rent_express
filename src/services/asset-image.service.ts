@@ -19,8 +19,8 @@ class AssetImageService {
     };
   }
 
-  async listByAsset(assetId: string): Promise<AssetImageResponse[]> {
-    await this.assertAsset(assetId);
+  async listByAsset(assetId: string, organizationId: string): Promise<AssetImageResponse[]> {
+    await this.assertAsset(assetId, organizationId);
     const images = await assetImageRepository.findByAsset(assetId);
     return images.map((img) => this.toResponse(img));
   }
@@ -28,9 +28,10 @@ class AssetImageService {
   async upload(
     assetId: string,
     file: Express.Multer.File,
-    caption?: string | null,
+    caption: string | null | undefined,
+    organizationId: string,
   ): Promise<AssetImageResponse> {
-    await this.assertAsset(assetId);
+    await this.assertAsset(assetId, organizationId);
 
     if (!ALLOWED_MIME_TYPES.has(file.mimetype)) {
       throw new AppError("Unsupported image type. Use JPEG, PNG, WebP or GIF.", 400, "INVALID_IMAGE_TYPE");
@@ -59,15 +60,15 @@ class AssetImageService {
     return this.toResponse(image);
   }
 
-  async setPrimary(assetId: string, imageId: string): Promise<AssetImageResponse> {
-    await this.assertAsset(assetId);
+  async setPrimary(assetId: string, imageId: string, organizationId: string): Promise<AssetImageResponse> {
+    await this.assertAsset(assetId, organizationId);
     const updated = await assetImageRepository.setPrimary(imageId, assetId);
     if (!updated) throw new AppError("Image not found.", 404, "ASSET_IMAGE_NOT_FOUND");
     return this.toResponse(updated);
   }
 
-  async delete(assetId: string, imageId: string): Promise<void> {
-    await this.assertAsset(assetId);
+  async delete(assetId: string, imageId: string, organizationId: string): Promise<void> {
+    await this.assertAsset(assetId, organizationId);
     const image = await assetImageRepository.findById(imageId);
     if (!image || image.assetId !== assetId) {
       throw new AppError("Image not found.", 404, "ASSET_IMAGE_NOT_FOUND");
@@ -87,9 +88,11 @@ class AssetImageService {
     }
   }
 
-  private async assertAsset(assetId: string): Promise<void> {
+  private async assertAsset(assetId: string, organizationId: string): Promise<void> {
     const asset = await assetRepository.findById(assetId);
-    if (!asset) throw new AppError("Asset not found.", 404, "ASSET_NOT_FOUND");
+    if (!asset || asset.organizationId !== organizationId) {
+      throw new AppError("Asset not found.", 404, "ASSET_NOT_FOUND");
+    }
   }
 }
 

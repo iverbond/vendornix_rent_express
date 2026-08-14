@@ -10,7 +10,7 @@ import { sendSuccess } from "../utils/response";
 
 export const listRentals = asyncHandler(async (req: Request, res: Response) => {
   const rentals = await rentalService.getAll({
-    organizationId: req.query.organizationId as string | undefined,
+    organizationId: req.organizationId!,
     assetId: req.query.assetId as string | undefined,
     clientId: req.query.clientId as string | undefined,
   });
@@ -18,17 +18,23 @@ export const listRentals = asyncHandler(async (req: Request, res: Response) => {
 });
 
 export const getRental = asyncHandler(async (req: Request, res: Response) => {
-  const rental = await rentalService.getById(getRouteParam(req.params.id));
+  const rental = await rentalService.getById(getRouteParam(req.params.id), req.organizationId!);
   return sendSuccess(res, "Rental retrieved.", rental);
 });
 
 export const getActiveRentalByAsset = asyncHandler(async (req: Request, res: Response) => {
-  const rental = await rentalService.getActiveByAsset(getRouteParam(req.params.assetId));
+  const rental = await rentalService.getActiveByAsset(
+    getRouteParam(req.params.assetId),
+    req.organizationId!,
+  );
   return sendSuccess(res, "Active rental retrieved.", rental);
 });
 
 export const createRental = asyncHandler(async (req: Request, res: Response) => {
-  const rental = await rentalService.create(normalizeCreateRentalPayload(req.body));
+  const rental = await rentalService.create({
+    ...normalizeCreateRentalPayload(req.body),
+    organizationId: req.organizationId!,
+  });
   return sendSuccess(res, "Rental created.", rental, undefined, 201);
 });
 
@@ -36,16 +42,17 @@ export const updateRental = asyncHandler(async (req: Request, res: Response) => 
   const rental = await rentalService.update(
     getRouteParam(req.params.id),
     normalizeUpdateRentalPayload(req.body),
+    req.organizationId!,
   );
   return sendSuccess(res, "Rental updated.", rental);
 });
 
 export const regenerateRentalContract = asyncHandler(async (req: Request, res: Response) => {
-  const rental = await rentalService.regenerateContract(getRouteParam(req.params.id));
+  const rental = await rentalService.regenerateContract(getRouteParam(req.params.id), req.organizationId!);
   return sendSuccess(res, "Rental contract regenerated.", rental);
 });
 
 export const deleteRental = asyncHandler(async (req: Request, res: Response) => {
-  await rentalService.delete(getRouteParam(req.params.id));
+  await rentalService.delete(getRouteParam(req.params.id), req.organizationId!);
   return sendSuccess(res, "Rental deleted.", null);
 });

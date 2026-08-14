@@ -8,13 +8,15 @@ import type { ClientEntity } from "../types/entity.types";
 import { AppError } from "../utils/app-error";
 
 class ClientService {
-  async getAll(organizationId?: string): Promise<ClientEntity[]> {
+  async getAll(organizationId: string): Promise<ClientEntity[]> {
     return clientRepository.findAll(organizationId);
   }
 
-  async getById(id: string): Promise<ClientEntity> {
+  async getById(id: string, organizationId: string): Promise<ClientEntity> {
     const client = await clientRepository.findById(id);
-    if (!client) throw new AppError("Client not found.", 404, "CLIENT_NOT_FOUND");
+    if (!client || client.organizationId !== organizationId) {
+      throw new AppError("Client not found.", 404, "CLIENT_NOT_FOUND");
+    }
     return client;
   }
 
@@ -23,15 +25,22 @@ class ClientService {
     return clientRepository.create(dto);
   }
 
-  async update(id: string, dto: UpdateClientData): Promise<ClientEntity> {
+  async update(id: string, dto: UpdateClientData, organizationId: string): Promise<ClientEntity> {
+    const existing = await clientRepository.findById(id);
+    if (!existing || existing.organizationId !== organizationId) {
+      throw new AppError("Client not found.", 404, "CLIENT_NOT_FOUND");
+    }
     const updated = await clientRepository.update(id, dto);
     if (!updated) throw new AppError("Client not found.", 404, "CLIENT_NOT_FOUND");
     return updated;
   }
 
-  async delete(id: string): Promise<void> {
-    const deleted = await clientRepository.delete(id);
-    if (!deleted) throw new AppError("Client not found.", 404, "CLIENT_NOT_FOUND");
+  async delete(id: string, organizationId: string): Promise<void> {
+    const existing = await clientRepository.findById(id);
+    if (!existing || existing.organizationId !== organizationId) {
+      throw new AppError("Client not found.", 404, "CLIENT_NOT_FOUND");
+    }
+    await clientRepository.delete(id);
   }
 
   private async assertOrganization(organizationId: string): Promise<void> {

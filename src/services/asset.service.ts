@@ -4,17 +4,19 @@ import type { AssetEntity, AssetTreeNode } from "../types/entity.types";
 import { AppError } from "../utils/app-error";
 
 class AssetService {
-  async getAll(organizationId?: string): Promise<AssetEntity[]> {
+  async getAll(organizationId: string): Promise<AssetEntity[]> {
     return assetRepository.findAll(organizationId);
   }
 
-  async getById(id: string): Promise<AssetEntity> {
+  async getById(id: string, organizationId: string): Promise<AssetEntity> {
     const asset = await assetRepository.findById(id);
-    if (!asset) throw new AppError("Asset not found.", 404, "ASSET_NOT_FOUND");
+    if (!asset || asset.organizationId !== organizationId) {
+      throw new AppError("Asset not found.", 404, "ASSET_NOT_FOUND");
+    }
     return asset;
   }
 
-  async getTree(organizationId?: string): Promise<AssetTreeNode[]> {
+  async getTree(organizationId: string): Promise<AssetTreeNode[]> {
     const assets = await assetRepository.findAll(organizationId);
     const byId = new Map(assets.map((a) => [a.id, { ...a, children: [] as AssetTreeNode[] }]));
     const roots: AssetTreeNode[] = [];
@@ -41,9 +43,11 @@ class AssetService {
     return assetRepository.create(dto);
   }
 
-  async update(id: string, dto: UpdateAssetData): Promise<AssetEntity> {
+  async update(id: string, dto: UpdateAssetData, organizationId: string): Promise<AssetEntity> {
     const existing = await assetRepository.findById(id);
-    if (!existing) throw new AppError("Asset not found.", 404, "ASSET_NOT_FOUND");
+    if (!existing || existing.organizationId !== organizationId) {
+      throw new AppError("Asset not found.", 404, "ASSET_NOT_FOUND");
+    }
 
     if (dto.parentAssetId) {
       if (dto.parentAssetId === id) {
@@ -60,9 +64,12 @@ class AssetService {
     return updated;
   }
 
-  async delete(id: string): Promise<void> {
-    const deleted = await assetRepository.delete(id);
-    if (!deleted) throw new AppError("Asset not found.", 404, "ASSET_NOT_FOUND");
+  async delete(id: string, organizationId: string): Promise<void> {
+    const existing = await assetRepository.findById(id);
+    if (!existing || existing.organizationId !== organizationId) {
+      throw new AppError("Asset not found.", 404, "ASSET_NOT_FOUND");
+    }
+    await assetRepository.delete(id);
   }
 
   private async assertOrganization(organizationId: string): Promise<void> {

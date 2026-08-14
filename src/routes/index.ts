@@ -1,5 +1,6 @@
 import { Router } from "express";
 import { env } from "../config/env";
+import { authenticate } from "../middlewares/auth.middleware";
 import { sendSuccess } from "../utils/response";
 import assetsRoutes from "./assets.routes";
 import authRoutes from "./auth.routes";
@@ -16,8 +17,13 @@ router.get("/", (_req, res) => {
   return sendSuccess(res, `${env.APP_NAME} is healthy.`, { version: "1.0.0" });
 });
 
-router.use("/users", usersRoutes);
+// Public routes (must stay ahead of the `authenticate` gate below).
 router.use("/auth", authRoutes);
+
+// Everything below requires a valid Bearer access token.
+router.use(authenticate);
+
+router.use("/users", usersRoutes);
 router.use("/organizations", organizationsRoutes);
 router.use("/memberships", membershipsRoutes);
 router.use("/assets", assetsRoutes);

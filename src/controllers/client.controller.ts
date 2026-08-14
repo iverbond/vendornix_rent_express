@@ -5,19 +5,18 @@ import { getRouteParam } from "../utils/param.util";
 import { sendSuccess } from "../utils/response";
 
 export const listClients = asyncHandler(async (req: Request, res: Response) => {
-  const organizationId = req.query.organizationId as string | undefined;
-  const clients = await clientService.getAll(organizationId);
+  const clients = await clientService.getAll(req.organizationId!);
   return sendSuccess(res, "Clients retrieved.", clients);
 });
 
 export const getClient = asyncHandler(async (req: Request, res: Response) => {
-  const client = await clientService.getById(getRouteParam(req.params.id));
+  const client = await clientService.getById(getRouteParam(req.params.id), req.organizationId!);
   return sendSuccess(res, "Client retrieved.", client);
 });
 
 export const createClient = asyncHandler(async (req: Request, res: Response) => {
   const client = await clientService.create({
-    organizationId: String(req.body.organizationId),
+    organizationId: req.organizationId!,
     firstName: String(req.body.firstName).trim(),
     lastName: String(req.body.lastName).trim(),
     email: req.body.email ?? null,
@@ -29,11 +28,11 @@ export const createClient = asyncHandler(async (req: Request, res: Response) => 
 });
 
 export const updateClient = asyncHandler(async (req: Request, res: Response) => {
-  const client = await clientService.update(getRouteParam(req.params.id), req.body);
+  const client = await clientService.update(getRouteParam(req.params.id), req.body, req.organizationId!);
   return sendSuccess(res, "Client updated.", client);
 });
 
 export const deleteClient = asyncHandler(async (req: Request, res: Response) => {
-  await clientService.delete(getRouteParam(req.params.id));
+  await clientService.delete(getRouteParam(req.params.id), req.organizationId!);
   return sendSuccess(res, "Client deleted.", null);
 });

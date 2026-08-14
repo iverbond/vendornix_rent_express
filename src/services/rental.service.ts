@@ -12,22 +12,26 @@ import { AppError } from "../utils/app-error";
 import { buildContractNumber, generateRentalContract } from "./rental-contract.service";
 
 class RentalService {
-  async getAll(filters?: {
-    organizationId?: string;
+  async getAll(filters: {
+    organizationId: string;
     assetId?: string;
     clientId?: string;
   }): Promise<RentalEntity[]> {
     return rentalRepository.findAll(filters);
   }
 
-  async getById(id: string): Promise<RentalEntity> {
+  async getById(id: string, organizationId: string): Promise<RentalEntity> {
     const rental = await rentalRepository.findById(id);
-    if (!rental) throw new AppError("Rental not found.", 404, "RENTAL_NOT_FOUND");
+    if (!rental || rental.organizationId !== organizationId) {
+      throw new AppError("Rental not found.", 404, "RENTAL_NOT_FOUND");
+    }
     return rental;
   }
 
-  async getActiveByAsset(assetId: string): Promise<RentalEntity | null> {
-    return rentalRepository.findActiveByAsset(assetId);
+  async getActiveByAsset(assetId: string, organizationId: string): Promise<RentalEntity | null> {
+    const rental = await rentalRepository.findActiveByAsset(assetId);
+    if (!rental || rental.organizationId !== organizationId) return null;
+    return rental;
   }
 
   async create(dto: CreateRentalData): Promise<RentalEntity> {
@@ -45,9 +49,11 @@ class RentalService {
     return withContract;
   }
 
-  async update(id: string, dto: UpdateRentalData): Promise<RentalEntity> {
+  async update(id: string, dto: UpdateRentalData, organizationId: string): Promise<RentalEntity> {
     const existing = await rentalRepository.findById(id);
-    if (!existing) throw new AppError("Rental not found.", 404, "RENTAL_NOT_FOUND");
+    if (!existing || existing.organizationId !== organizationId) {
+      throw new AppError("Rental not found.", 404, "RENTAL_NOT_FOUND");
+    }
 
     const startDate = dto.startDate ?? existing.startDate;
     const endDate = dto.endDate !== undefined ? dto.endDate : existing.endDate;
@@ -63,8 +69,8 @@ class RentalService {
     return updated;
   }
 
-  async regenerateContract(id: string): Promise<RentalEntity> {
-    const rental = await this.getById(id);
+  async regenerateContract(id: string, organizationId: string): Promise<RentalEntity> {
+    const rental = await this.getById(id, organizationId);
     const context = await this.loadContractContext(
       rental.organizationId,
       rental.assetId,
@@ -84,13 +90,13 @@ class RentalService {
     return updated;
   }
 
-  async delete(id: string): Promise<void> {
+  async delete(id: string, organizationId: string): Promise<void> {
     const existing = await rentalRepository.findById(id);
-    if (!existing) throw new AppError("Rental not found.", 404, "RENTAL_NOT_FOUND");
+    if (!existing || existing.organizationId !== organizationId) {
+      throw new AppError("Rental not found.", 404, "RENTAL_NOT_FOUND");
+    }
 
-    const deleted = await rentalRepository.delete(id);
-    if (!deleted) throw new AppError("Rental not found.", 404, "RENTAL_NOT_FOUND");
-
+    await rentalRepository.delete(id);
     await this.syncAssetStatus(existing.assetId);
   }
 

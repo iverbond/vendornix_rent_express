@@ -1,12 +1,15 @@
+import type { MembershipRole } from "../../constants/enums";
 import type { RequestFilters } from "../query.types";
 
 declare global {
   namespace Express {
     interface Request {
-      /** Reserved for future JWT user context. */
+      /** Set by `authenticate` from a verified access token. */
       userId?: string;
-      /** Reserved for future multi-tenant organization context. */
+      /** Set by `requireOrganization` after verifying membership in the `x-organization-id` header. */
       organizationId?: string;
+      /** Set alongside `organizationId` — the caller's role within that organization. */
+      membershipRole?: MembershipRole;
       pagination?: {
         page: number;
         limit: number;
