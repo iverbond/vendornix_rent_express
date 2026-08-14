@@ -5,6 +5,7 @@ import { ClientModel } from "./models/client.model";
 import { MembershipModel } from "./models/membership.model";
 import { OrganizationModel } from "./models/organization.model";
 import { PasswordResetTokenModel } from "./models/password-reset-token.model";
+import { PaymentModel } from "./models/payment.model";
 import { RentalModel } from "./models/rental.model";
 import { UserModel } from "./models/user.model";
 
@@ -38,6 +39,9 @@ export const initModels = (): void => {
 
   ClientModel.hasMany(RentalModel, { foreignKey: "clientId", as: "rentals" });
   RentalModel.belongsTo(ClientModel, { foreignKey: "clientId", as: "client" });
+
+  RentalModel.hasMany(PaymentModel, { foreignKey: "rentalId", as: "payments" });
+  PaymentModel.belongsTo(RentalModel, { foreignKey: "rentalId", as: "rental" });
 };
 
 export {
@@ -50,4 +54,5 @@ export {
   PasswordResetTokenModel,
   ClientModel,
   RentalModel,
+  PaymentModel,
 };

@@ -1,8 +1,14 @@
 import { Router } from "express";
 import * as rentalController from "../controllers/rental.controller";
+import * as rentalPaymentController from "../controllers/rental-payment.controller";
 import { MembershipRole } from "../constants/enums";
 import { requireMinRole, requireOrganization } from "../middlewares/organization-context.middleware";
 import { validate } from "../middlewares/validation.middleware";
+import {
+  listRentalPaymentsValidator,
+  markPaymentPaidValidator,
+  markPaymentPendingValidator,
+} from "../validators/payment.validators";
 import {
   createRentalValidator,
   deleteRentalValidator,
@@ -47,6 +53,24 @@ router.delete(
   requireMinRole(MembershipRole.MANAGER),
   validate(deleteRentalValidator),
   rentalController.deleteRental,
+);
+
+router.get(
+  "/:id/payments",
+  validate(listRentalPaymentsValidator),
+  rentalPaymentController.listRentalPayments,
+);
+router.post(
+  "/:id/payments/:paymentId/pay",
+  requireMinRole(MembershipRole.AGENT),
+  validate(markPaymentPaidValidator),
+  rentalPaymentController.markPaymentPaid,
+);
+router.post(
+  "/:id/payments/:paymentId/unpay",
+  requireMinRole(MembershipRole.AGENT),
+  validate(markPaymentPendingValidator),
+  rentalPaymentController.markPaymentPending,
 );
 
 export default router;

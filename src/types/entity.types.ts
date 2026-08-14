@@ -5,6 +5,7 @@ import {
   MembershipRole,
   OrganizationStatus,
   OrganizationType,
+  PaymentStatus,
   PricingPeriod,
   RentalStatus,
   UserRole,
@@ -121,4 +122,37 @@ export interface RentalEntity {
   contractContent: string | null;
   createdAt: Date;
   updatedAt: Date;
+}
+
+export interface PaymentEntity {
+  id: string;
+  organizationId: string;
+  rentalId: string;
+  periodStart: string;
+  periodEnd: string;
+  dueDate: string;
+  dueAmountCdf: string;
+  dueAmountUsd: string;
+  currency: CurrencyCode;
+  status: PaymentStatus;
+  paidAt: Date | null;
+  paidAmountCdf: string | null;
+  paidAmountUsd: string | null;
+  method: string | null;
+  notes: string | null;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface PaymentWithComputed extends PaymentEntity {
+  isLate: boolean;
+}
+
+export interface PaymentReminderEntity extends PaymentWithComputed {
+  daysOffset: number;
+  dueSoon: boolean;
+  assetName: string;
+  clientName: string;
+  contractNumber: string | null;
+  pricingPeriod: PricingPeriod;
 }

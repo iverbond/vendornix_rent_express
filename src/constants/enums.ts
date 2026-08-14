@@ -73,3 +73,8 @@ export enum RentalStatus {
   ENDED = "ENDED",
   CANCELLED = "CANCELLED",
 }
+
+export enum PaymentStatus {
+  PENDING = "PENDING",
+  PAID = "PAID",
+}

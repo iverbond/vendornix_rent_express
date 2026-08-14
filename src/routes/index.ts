@@ -8,6 +8,7 @@ import clientsRoutes from "./clients.routes";
 import rentalsRoutes from "./rentals.routes";
 import membershipsRoutes from "./memberships.routes";
 import organizationsRoutes from "./organizations.routes";
+import paymentsRoutes from "./payments.routes";
 import settingsRoutes from "./settings.routes";
 import usersRoutes from "./users.routes";
 
@@ -29,6 +30,7 @@ router.use("/memberships", membershipsRoutes);
 router.use("/assets", assetsRoutes);
 router.use("/clients", clientsRoutes);
 router.use("/rentals", rentalsRoutes);
+router.use("/payments", paymentsRoutes);
 router.use("/settings", settingsRoutes);
 
 export default router;

@@ -16,6 +16,10 @@ const toRequiredDecimal = (value: unknown, field: string): string => {
 
 const toDateString = (value: unknown): string | null => {
   if (value === null || value === undefined || value === "") return null;
+  // express-validator's `.toDate()` sanitizer replaces the field with a real Date instance;
+  // `String(date)` (e.g. "Mon Jun 30 2025 ...") truncated to 10 chars is not a valid date and,
+  // once re-parsed, silently defaults to the year 2001. Always go through ISO format instead.
+  if (value instanceof Date) return value.toISOString().slice(0, 10);
   return String(value).slice(0, 10);
 };
 

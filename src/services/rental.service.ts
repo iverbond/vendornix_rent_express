@@ -10,6 +10,7 @@ import { organizationRepository } from "../repositories/organization.repository"
 import type { RentalEntity } from "../types/entity.types";
 import { AppError } from "../utils/app-error";
 import { buildContractNumber, generateRentalContract } from "./rental-contract.service";
+import { paymentService } from "./payment.service";
 
 class RentalService {
   async getAll(filters: {
@@ -45,6 +46,8 @@ class RentalService {
     if (withContract.status === RentalStatus.ACTIVE) {
       await assetRepository.update(dto.assetId, { status: AssetStatus.RENTED });
     }
+
+    await paymentService.ensureScheduleUpToDate(withContract);
 
     return withContract;
   }
