@@ -124,6 +124,18 @@ export interface RentalEntity {
   updatedAt: Date;
 }
 
+export interface RentalOccupancyEntity {
+  id: string;
+  assetId: string;
+  assetName: string;
+  clientName: string;
+  status: RentalStatus;
+  startDate: string;
+  endDate: string | null;
+  pricingPeriod: PricingPeriod;
+  contractNumber: string | null;
+}
+
 export interface PaymentEntity {
   id: string;
   organizationId: string;

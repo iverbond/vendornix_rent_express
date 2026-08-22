@@ -22,6 +22,15 @@ export const getRental = asyncHandler(async (req: Request, res: Response) => {
   return sendSuccess(res, "Rental retrieved.", rental);
 });
 
+export const getRentalOccupancy = asyncHandler(async (req: Request, res: Response) => {
+  const occupancy = await rentalService.getOccupancy(
+    req.organizationId!,
+    req.query.from as string,
+    req.query.to as string,
+  );
+  return sendSuccess(res, "Rental occupancy retrieved.", occupancy);
+});
+
 export const getActiveRentalByAsset = asyncHandler(async (req: Request, res: Response) => {
   const rental = await rentalService.getActiveByAsset(
     getRouteParam(req.params.assetId),

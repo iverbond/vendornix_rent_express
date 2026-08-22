@@ -26,6 +26,11 @@ export const listRentalsValidator = [
   query("clientId").optional().isUUID(4),
 ] as const;
 
+export const listRentalOccupancyValidator = [
+  query("from").isISO8601(),
+  query("to").isISO8601(),
+] as const;
+
 export const getRentalValidator = [uuidParam("id")] as const;
 
 export const getActiveRentalByAssetValidator = [uuidParam("assetId")] as const;

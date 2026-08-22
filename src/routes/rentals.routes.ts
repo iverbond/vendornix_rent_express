@@ -14,6 +14,7 @@ import {
   deleteRentalValidator,
   getActiveRentalByAssetValidator,
   getRentalValidator,
+  listRentalOccupancyValidator,
   listRentalsValidator,
   regenerateRentalContractValidator,
   updateRentalValidator,
@@ -24,6 +25,11 @@ const router = Router();
 router.use(requireOrganization);
 
 router.get("/", validate(listRentalsValidator), rentalController.listRentals);
+router.get(
+  "/occupancy",
+  validate(listRentalOccupancyValidator),
+  rentalController.getRentalOccupancy,
+);
 router.get(
   "/asset/:assetId/active",
   validate(getActiveRentalByAssetValidator),

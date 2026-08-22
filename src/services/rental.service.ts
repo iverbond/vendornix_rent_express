@@ -7,7 +7,7 @@ import {
   type UpdateRentalData,
 } from "../repositories/rental.repository";
 import { organizationRepository } from "../repositories/organization.repository";
-import type { RentalEntity } from "../types/entity.types";
+import type { RentalEntity, RentalOccupancyEntity } from "../types/entity.types";
 import { AppError } from "../utils/app-error";
 import { buildContractNumber, generateRentalContract } from "./rental-contract.service";
 import { paymentService } from "./payment.service";
@@ -33,6 +33,36 @@ class RentalService {
     const rental = await rentalRepository.findActiveByAsset(assetId);
     if (!rental || rental.organizationId !== organizationId) return null;
     return rental;
+  }
+
+  async getOccupancy(organizationId: string, from: string, to: string): Promise<RentalOccupancyEntity[]> {
+    const [rentals, assets, clients] = await Promise.all([
+      rentalRepository.findAll({ organizationId }),
+      assetRepository.findAll(organizationId),
+      clientRepository.findAll(organizationId),
+    ]);
+
+    const assetMap = new Map(assets.map((a) => [a.id, a]));
+    const clientMap = new Map(clients.map((c) => [c.id, c]));
+
+    return rentals
+      .filter((r) => r.status === RentalStatus.ACTIVE || r.status === RentalStatus.DRAFT)
+      .filter((r) => r.startDate <= to && (!r.endDate || r.endDate >= from))
+      .map((r) => {
+        const asset = assetMap.get(r.assetId);
+        const client = clientMap.get(r.clientId);
+        return {
+          id: r.id,
+          assetId: r.assetId,
+          assetName: asset?.name ?? "Bien inconnu",
+          clientName: client ? `${client.firstName} ${client.lastName}` : "Client inconnu",
+          status: r.status,
+          startDate: r.startDate,
+          endDate: r.endDate,
+          pricingPeriod: r.pricingPeriod,
+          contractNumber: r.contractNumber,
+        };
+      });
   }
 
   async create(dto: CreateRentalData): Promise<RentalEntity> {
